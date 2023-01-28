@@ -1,12 +1,12 @@
 #include <errno.h>
-#include <sys/mman.h>
-#include <stdio.h>
 #include <fcntl.h>
-#include <stdlib.h>
-#include <sys/errno.h>
-#include <sys/stat.h>
 #include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <sys/errno.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
 
 #include "w3sc.h"
 
@@ -30,6 +30,9 @@ void *save_file(void *arg) {
     fwrite(file_save_data->data, file_save_data->size, 1, outfile);
     fclose(outfile);
     // printf("file_save_data{\n\tname: %s\n\tsize: %d\n}\n", file_save_data->name, file_save_data->size);
+
+    free(file_save_data);
+    free(final_file_path);
 
     return NULL;
 }
@@ -82,13 +85,15 @@ int main(int argc, char **argv) {
         file_save_data->data = filedata;
         file_save_data->size = filesize;
 
-        pthread_create(&threads[i], NULL, save_file, file_save_data);
-
-
         fprintf(stdout, "extracting file %s!\n", filename);
+
+        pthread_create(&threads[i], NULL, save_file, file_save_data);
     }
 
     for (int i = 0; i < w3sc->header->file_count; i++) {
         pthread_join(threads[i], NULL);
     }
+
+    free(dirname);
+    free(threads);
 }
