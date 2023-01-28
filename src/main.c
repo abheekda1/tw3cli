@@ -39,12 +39,21 @@ void *save_file(void *arg) {
 
 int main(int argc, char **argv) {
     if (argc < 2) {
-        fprintf(stderr, "not enough arguments! expected %d, got %d.\n", 1, argc - 1);
+        fprintf(stderr, "Not enough arguments! Expected %d, got %d.\n", 1, argc - 1);
         exit(EXIT_FAILURE);
     }
 
     FILE *file = fopen(argv[1], "r");
+    if (!file) {
+        perror("Failed to open file");
+        exit(EXIT_FAILURE);
+    }
+
     int fd = fileno(file);
+    if (fd < 0) {
+        perror("Failed to get the file descriptor");
+        exit(EXIT_FAILURE);
+    }
 
     fseek(file, 0, SEEK_END);
     size_t fsize = (size_t)ftell(file);
